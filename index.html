@@ -9,228 +9,52 @@
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    body {
-      margin: 0;
-      padding: 16px;
-      background: #f4f6ff;
-      display: flex;
-      justify-content: center;
-    }
-
-    .page {
-      max-width: 900px;
-      width: 100%;
-    }
-
-    .controls-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: flex-start;
-      margin-bottom: 12px;
-    }
-
+    * { box-sizing: border-box; font-family: system-ui, sans-serif; }
+    body { margin: 0; padding: 16px; background: #f4f6ff; display: flex; justify-content: center; }
+    .page { max-width: 900px; width: 100%; }
+    .controls-bar { display: flex; gap: 8px; margin-bottom: 12px; }
     .btn {
-      border: none;
-      border-radius: 999px;
-      padding: 6px 12px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      background: #4a7dff;
-      color: #ffffff;
-      font-weight: 500;
-      box-shadow: 0 2px 6px rgba(74, 125, 255, 0.35);
-      transition: transform 0.08s ease, box-shadow 0.08s ease;
-      white-space: nowrap;
+      border: none; border-radius: 999px; padding: 6px 12px; font-size: 0.85rem;
+      cursor: pointer; background: #4a7dff; color: white; font-weight: 500;
     }
-
-    .btn.secondary {
-      background: #ffffff;
-      color: #325;
-      border: 1px solid #c0cffc;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-    }
-
-    .btn.small {
-      padding: 4px 8px;
-      font-size: 0.75rem;
-      box-shadow: none;
-      border-radius: 999px;
-    }
-
-    .btn:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 3px 8px rgba(74, 125, 255, 0.4);
-    }
-
-    .btn:active:not(:disabled) {
-      transform: translateY(0);
-      box-shadow: 0 1px 4px rgba(74, 125, 255, 0.25);
-    }
-
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: default;
-      box-shadow: none;
-    }
-
-    /* Worksheet container (this is what we export as JPG) */
+    .btn.secondary { background: white; color: #325; border: 1px solid #c0cffc; }
+    .btn.small { padding: 4px 8px; font-size: 0.75rem; }
     #worksheet {
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 16px 20px 20px;
-      border: 1px solid #dde4ff;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      background: white; border-radius: 12px; padding: 16px 20px 20px;
+      border: 1px solid #dde4ff; box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
-
     .worksheet-header {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 10px;
-      border-bottom: 1px solid #e0e5ff;
-      padding-bottom: 8px;
+      display: flex; justify-content: space-between; border-bottom: 1px solid #e0e5ff;
+      padding-bottom: 8px; margin-bottom: 10px;
     }
-
-    .worksheet-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #123;
-    }
-
-    .worksheet-meta {
-      font-size: 0.8rem;
-      color: #567;
-      text-align: right;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      align-items: flex-end;
-    }
-
-    .instructions {
-      font-size: 0.85rem;
-      color: #345;
-      margin-top: 2px;
-    }
-
-    .student-info {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 8px 0 12px;
-      font-size: 0.8rem;
-    }
-
-    .student-info label {
-      margin-right: 4px;
-    }
-
-    .student-info input {
-      border-radius: 4px;
-      border: 1px solid #cbd5ff;
-      padding: 2px 6px;
-      font-size: 0.8rem;
-    }
-
+    .worksheet-meta { text-align: right; font-size: 0.8rem; display: flex; flex-direction: column; gap: 2px; }
     .problems-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 12px;
     }
-
-    @media (max-width: 720px) {
-      .problems-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 480px) {
-      .problems-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
     .problem-card {
-      border-radius: 8px;
-      border: 1px solid #d5ddff;
-      padding: 8px;
-      background: #f8f9ff;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 80px;
+      border-radius: 8px; border: 1px solid #d5ddff; padding: 8px; background: #f8f9ff;
+      display: flex; flex-direction: column;
     }
-
-    .problem-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 4px;
-    }
-
-    .problem-expression {
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      flex-wrap: wrap;
-    }
-
-    .problem-expression span {
-      min-width: 12px;
-    }
-
-    .answer-input {
-      width: 70px;
-      border-radius: 4px;
-      border: 1px solid #cbd5ff;
-      padding: 2px 4px;
-      text-align: center;
-      font-size: 0.95rem;
-    }
-
-    .answer-input:disabled {
-      background: #e4e7ff;
-    }
-
-    .feedback {
-      margin-top: 2px;
-      font-size: 0.8rem;
-      min-height: 1em;
-    }
-
-    .feedback.correct {
-      color: #1a8a2b;
-    }
-
-    .feedback.incorrect {
-      color: #d23b3b;
-    }
+    .problem-top { display: flex; justify-content: space-between; align-items: center; }
+    .answer-input { width: 70px; text-align: center; }
+    .feedback { font-size: 0.8rem; min-height: 1em; }
+    .correct { color: #1a8a2b; }
+    .incorrect { color: #d23b3b; }
   </style>
 </head>
 <body>
+
   <div class="page">
     <div class="controls-bar">
       <button class="btn secondary" id="newBtn">New Questions</button>
       <button class="btn" id="exportBtn">Export as JPG</button>
     </div>
 
-    <!-- WORKSHEET CONTENT (captured for the JPG) -->
     <div id="worksheet">
       <div class="worksheet-header">
         <div>
-          <div class="worksheet-title">Multiplication Practice (1–20 × 1–20)</div>
-          <div class="instructions">
-            Multiply the two numbers and write the product. Use the <strong>Check</strong> button on each question.
-          </div>
+          <div><strong>Multiplication Practice (1–20 × 1–20)</strong></div>
+          <div>Multiply the two numbers and press Check on each question.</div>
         </div>
         <div class="worksheet-meta">
           <div id="dateDisplay"></div>
@@ -239,262 +63,166 @@
         </div>
       </div>
 
-      <div class="student-info">
-        <div>
-          <label for="studentName">Name:</label>
-          <input id="studentName" type="text" placeholder="Student name" />
-        </div>
-        <div>
-          <label for="className">Class:</label>
-          <input id="className" type="text" placeholder="Class" />
-        </div>
-      </div>
-
-      <div class="problems-grid" id="problemsGrid">
-        <!-- Problems will be injected by JavaScript -->
-      </div>
+      <div class="problems-grid" id="problemsGrid"></div>
     </div>
   </div>
 
-  <script>
-    const NUM_PROBLEMS = 12;
-    const problemsGrid = document.getElementById("problemsGrid");
-    const newBtn = document.getElementById("newBtn");
-    const exportBtn = document.getElementById("exportBtn");
-    const dateDisplay = document.getElementById("dateDisplay");
-    const timerDisplay = document.getElementById("timerDisplay");
-    const bestTimeDisplay = document.getElementById("bestTimeDisplay");
+<script>
+const NUM_PROBLEMS = 12;
+const problemsGrid = document.getElementById("problemsGrid");
+const newBtn = document.getElementById("newBtn");
+const exportBtn = document.getElementById("exportBtn");
+const dateDisplay = document.getElementById("dateDisplay");
+const timerDisplay = document.getElementById("timerDisplay");
+const bestTimeDisplay = document.getElementById("bestTimeDisplay");
 
-    // Store the current problems and answers
-    let problems = [];
+let problems = [];
+let timerStart = null;
+let timerEnd = null;
+let timerInterval = null;
 
-    // Timer state
-    let timerStart = null;
-    let timerEnd = null;
-    let timerInterval = null;
+function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
-    function randomInt(min, max) {
-      // inclusive
-      return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
+function resetTimer() {
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = null;
+  timerStart = null;
+  timerEnd = null;
+  timerDisplay.textContent = "Time: --:--";
+}
 
-    function resetTimer() {
-      if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-      }
-      timerStart = null;
-      timerEnd = null;
-      timerDisplay.textContent = "Time: --:--";
-    }
+function formatTime(ms) {
+  const s = Math.floor(ms / 1000);
+  return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+}
 
-    function formatDuration(ms) {
-      const totalSeconds = Math.floor(ms / 1000);
-      const minutes = Math.floor(totalSeconds / 60);
-      const seconds = totalSeconds % 60;
-      const mm = String(minutes).padStart(2, "0");
-      const ss = String(seconds).padStart(2, "0");
-      return `${mm}:${ss}`;
-    }
+function startTimerIfNeeded() {
+  if (timerStart === null) {
+    timerStart = Date.now();
+    timerInterval = setInterval(updateTimer, 250);
+  }
+}
 
-    function startTimerIfNeeded() {
-      if (timerStart === null) {
-        timerStart = Date.now();
-        timerInterval = setInterval(updateTimer, 250);
-      }
-    }
+function updateTimer() {
+  if (timerStart !== null && timerEnd === null) {
+    timerDisplay.textContent = "Time: " + formatTime(Date.now() - timerStart);
+  }
+}
 
-    function updateTimer() {
-      if (timerStart !== null && timerEnd === null) {
-        const now = Date.now();
-        const elapsed = now - timerStart;
-        timerDisplay.textContent = "Time: " + formatDuration(elapsed);
-      }
-    }
+function stopTimerIfAllCorrect() {
+  const cards = document.querySelectorAll(".problem-card");
+  const allCorrect = Array.from(cards).every(card =>
+    card.querySelector(".feedback").classList.contains("correct")
+  );
 
-    function getTodayKey() {
-      const now = new Date();
-      // YYYY-MM-DD
-      return now.toISOString().slice(0, 10);
-    }
+  if (allCorrect && timerEnd === null && timerStart !== null) {
+    timerEnd = Date.now();
+    clearInterval(timerInterval);
+    timerDisplay.textContent = "Final time: " + formatTime(timerEnd - timerStart);
+    saveBestTime(timerEnd - timerStart);
+  }
+}
 
-    function loadBestTime() {
-      const key = "bestTime-" + getTodayKey();
-      const msStr = localStorage.getItem(key);
-      if (msStr) {
-        const ms = parseInt(msStr, 10);
-        if (!isNaN(ms)) {
-          bestTimeDisplay.textContent = "Best today: " + formatDuration(ms);
-          return;
-        }
-      }
-      bestTimeDisplay.textContent = "Best today: --:--";
-    }
+function todayKey() {
+  return "best-" + new Date().toISOString().slice(0,10);
+}
 
-    function saveBestTimeIfBetter(elapsedMs) {
-      const key = "bestTime-" + getTodayKey();
-      const existing = localStorage.getItem(key);
-      let shouldUpdate = false;
+function loadBestTime() {
+  const ms = localStorage.getItem(todayKey());
+  if (ms) bestTimeDisplay.textContent = "Best today: " + formatTime(parseInt(ms));
+}
 
-      if (!existing) {
-        shouldUpdate = true;
-      } else {
-        const existingMs = parseInt(existing, 10);
-        if (isNaN(existingMs) || elapsedMs < existingMs) {
-          shouldUpdate = true;
-        }
-      }
+function saveBestTime(ms) {
+  const stored = localStorage.getItem(todayKey());
+  if (!stored || ms < parseInt(stored)) {
+    localStorage.setItem(todayKey(), String(ms));
+    bestTimeDisplay.textContent = "Best today: " + formatTime(ms);
+  }
+}
 
-      if (shouldUpdate) {
-        localStorage.setItem(key, String(elapsedMs));
-        bestTimeDisplay.textContent = "Best today: " + formatDuration(elapsedMs);
-      }
-    }
+function generateProblems() {
+  problemsGrid.innerHTML = "";
+  problems = [];
+  resetTimer();
 
-    function lockWorksheet() {
-      const inputs = document.querySelectorAll(".answer-input");
-      const buttons = document.querySelectorAll(".problem-card .btn.small");
-      inputs.forEach((input) => {
-        input.disabled = true;
-      });
-      buttons.forEach((btn) => {
-        btn.disabled = true;
-      });
-    }
+  for (let i = 0; i < NUM_PROBLEMS; i++) {
+    const a = randomInt(1, 20);
+    const b = randomInt(1, 20);
+    const product = a * b;
 
-    function stopTimerIfComplete() {
-      if (timerStart === null || timerEnd !== null) return;
+    problems.push({ a, b, product });
 
-      const inputs = document.querySelectorAll(".answer-input");
-      const allFilled = Array.from(inputs).every(
-        (input) => input.value.trim() !== ""
-      );
+    const card = document.createElement("div");
+    card.className = "problem-card";
+    card.dataset.index = i;
 
-      if (allFilled) {
-        timerEnd = Date.now();
-        if (timerInterval) {
-          clearInterval(timerInterval);
-          timerInterval = null;
-        }
-        const elapsed = timerEnd - timerStart;
-        timerDisplay.textContent = "Final time: " + formatDuration(elapsed);
-        saveBestTimeIfBetter(elapsed);
-        lockWorksheet();
-      }
-    }
+    card.innerHTML = `
+      <div class="problem-top">
+        <div>${a} × ${b} = <input class="answer-input" type="number"></div>
+        <button class="btn small checkBtn">Check</button>
+      </div>
+      <div class="feedback"></div>
+    `;
 
-    function generateProblems() {
-      problems = [];
-      problemsGrid.innerHTML = "";
-      resetTimer();
+    problemsGrid.appendChild(card);
 
-      for (let i = 0; i < NUM_PROBLEMS; i++) {
-        const a = randomInt(1, 20); // restricted to 1–20
-        const b = randomInt(1, 20);
-        const product = a * b;
+    const input = card.querySelector(".answer-input");
+    const checkBtn = card.querySelector(".checkBtn");
 
-        problems.push({ a, b, product });
+    input.addEventListener("input", () => {
+      startTimerIfNeeded();
+    });
 
-        const card = document.createElement("div");
-        card.className = "problem-card";
-        card.dataset.index = i;
+    checkBtn.addEventListener("click", () => {
+      checkSingle(card);
+      stopTimerIfAllCorrect();
+    });
+  }
+}
 
-        const topRow = document.createElement("div");
-        topRow.className = "problem-top";
+function checkSingle(card) {
+  const index = parseInt(card.dataset.index);
+  const { product } = problems[index];
+  const input = card.querySelector(".answer-input");
+  const fb = card.querySelector(".feedback");
 
-        const expr = document.createElement("div");
-        expr.className = "problem-expression";
-        expr.innerHTML = `
-          <span>${a}</span>
-          <span>×</span>
-          <span>${b}</span>
-          <span>=</span>
-          <input type="number" class="answer-input" inputmode="numeric" />
-        `;
+  if (parseInt(input.value) === product) {
+    fb.textContent = "✔️ Correct!";
+    fb.classList.add("correct");
+    fb.classList.remove("incorrect");
+  } else {
+    fb.textContent = "❌ Try again";
+    fb.classList.add("incorrect");
+    fb.classList.remove("correct");
+  }
+}
 
-        const singleCheckBtn = document.createElement("button");
-        singleCheckBtn.className = "btn small";
-        singleCheckBtn.type = "button";
-        singleCheckBtn.textContent = "Check";
+function exportWorksheetAsJPG() {
+  html2canvas(document.getElementById("worksheet"), {
+    backgroundColor: "#ffffff",
+    scale: 2
+  }).then(canvas => {
+    const link = document.createElement("a");
+    link.download = "multiplication.jpg";
+    link.href = canvas.toDataURL("image/jpeg", 0.9);
+    link.click();
+  });
+}
 
-        topRow.appendChild(expr);
-        topRow.appendChild(singleCheckBtn);
+function setTodayDate() {
+  dateDisplay.textContent = new Date().toLocaleDateString(undefined, {
+    year: "numeric", month: "short", day: "numeric"
+  });
+}
 
-        const feedback = document.createElement("div");
-        feedback.className = "feedback";
-        feedback.textContent = ""; // initially blank
+// Init
+newBtn.addEventListener("click", generateProblems);
+exportBtn.addEventListener("click", exportWorksheetAsJPG);
 
-        card.appendChild(topRow);
-        card.appendChild(feedback);
-        problemsGrid.appendChild(card);
+setTodayDate();
+loadBestTime();
+generateProblems();
+</script>
 
-        const answerInput = expr.querySelector(".answer-input");
-
-        // Start timer on first input; check completion on every input
-        answerInput.addEventListener("input", () => {
-          startTimerIfNeeded();
-          stopTimerIfComplete();
-        });
-
-        // Add per-question check handler
-        singleCheckBtn.addEventListener("click", () => {
-          checkSingleAnswer(card);
-        });
-      }
-    }
-
-    function checkSingleAnswer(card) {
-      const index = parseInt(card.dataset.index, 10);
-      const problem = problems[index];
-      const input = card.querySelector(".answer-input");
-      const feedback = card.querySelector(".feedback");
-
-      const studentValue = parseInt(input.value, 10);
-      if (!isNaN(studentValue) && studentValue === problem.product) {
-        feedback.textContent = "✅ Correct!";
-        feedback.classList.remove("incorrect");
-        feedback.classList.add("correct");
-      } else {
-        feedback.textContent = "🔴 Try again";
-        feedback.classList.remove("correct");
-        feedback.classList.add("incorrect");
-      }
-    }
-
-    function exportWorksheetAsJPG() {
-      const worksheet = document.getElementById("worksheet");
-
-      html2canvas(worksheet, {
-        backgroundColor: "#ffffff",
-        scale: 2
-      }).then((canvas) => {
-        const dataURL = canvas.toDataURL("image/jpeg", 0.9);
-        const link = document.createElement("a");
-        const now = new Date();
-        const stamp = now
-          .toISOString()
-          .replace(/[:.]/g, "-")
-          .slice(0, 19); // YYYY-MM-DDTHH-MM-SS
-        link.download = `multiplication-practice-1-20-${stamp}.jpg`;
-        link.href = dataURL;
-        link.click();
-      });
-    }
-
-    function setTodayDate() {
-      const now = new Date();
-      const options = { year: "numeric", month: "short", day: "numeric" };
-      dateDisplay.textContent = now.toLocaleDateString(undefined, options);
-    }
-
-    // Event listeners
-    newBtn.addEventListener("click", generateProblems);
-    exportBtn.addEventListener("click", exportWorksheetAsJPG);
-
-    // Initial setup
-    setTodayDate();
-    loadBestTime();
-    generateProblems();
-  </script>
 </body>
 </html>
