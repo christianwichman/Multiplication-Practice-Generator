@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Multiplication Practice (12 Questions)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- html2canvas for exporting the worksheet as an image -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      background: #f4f6ff;
+      display: flex;
+      justify-content: center;
+    }
+
+    .page {
+      max-width: 900px;
+      width: 100%;
+    }
+
+    .controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      background: #4a7dff;
+      color: #ffffff;
+      font-weight: 500;
+      box-shadow: 0 2px 6px rgba(74, 125, 255, 0.35);
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+
+    .btn.secondary {
+      background: #ffffff;
+      color: #325;
+      border: 1px solid #c0cffc;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(74, 125, 255, 0.4);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 4px rgba(74, 125, 255, 0.25);
+    }
+
+    /* Worksheet container (this is what we export as JPG) */
+    #worksheet {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 16px 20px 20px;
+      border: 1px solid #dde4ff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .worksheet-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #e0e5ff;
+      padding-bottom: 8px;
+    }
+
+    .worksheet-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #123;
+    }
+
+    .worksheet-meta {
+      font-size: 0.8rem;
+      color: #567;
+      text-align: right;
+    }
+
+    .instructions {
+      font-size: 0.85rem;
+      color: #345;
+      margin-top: 2px;
+    }
+
+    .student-info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 8px 0 12px;
+      font-size: 0.8rem;
+    }
+
+    .student-info label {
+      margin-right: 4px;
+    }
+
+    .student-info input {
+      border-radius: 4px;
+      border: 1px solid #cbd5ff;
+      padding: 2px 6px;
+      font-size: 0.8rem;
+    }
+
+    .problems-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    @media (max-width: 720px) {
+      .problems-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 480px) {
+      .problems-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .problem-card {
+      border-radius: 8px;
+      border: 1px solid #d5ddff;
+      padding: 8px;
+      background: #f8f9ff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 70px;
+    }
+
+    .problem-expression {
+      font-size: 1rem;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .problem-expression span {
+      min-width: 12px;
+    }
+
+    .answer-input {
+      width: 70px;
+      border-radius: 4px;
+      border: 1px solid #cbd5ff;
+      padding: 2px 4px;
+      text-align: center;
+      font-size: 0.95rem;
+    }
+
+    .feedback {
+      margin-top: 4px;
+      font-size: 0.8rem;
+      min-height: 1em;
+    }
+
+    .feedback.correct {
+      color: #1a8a2b;
+    }
+
+    .feedback.incorrect {
+      color: #d23b3b;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="controls-bar">
+      <button class="btn" id="checkBtn">Check Answers</button>
+      <button class="btn secondary" id="newBtn">New Questions</button>
+      <button class="btn" id="exportBtn">Export as JPG</button>
+    </div>
+
+    <!-- WORKSHEET CONTENT (captured for the JPG) -->
+    <div id="worksheet">
+      <div class="worksheet-header">
+        <div>
+          <div class="worksheet-title">Multiplication Practice (12 Questions)</div>
+          <div class="instructions">
+            Multiply the two numbers and write the product. Then click <strong>Check Answers</strong>.
+          </div>
+        </div>
+        <div class="worksheet-meta" id="dateDisplay"></div>
+      </div>
+
+      <div class="student-info">
+        <div>
+          <label for="studentName">Name:</label>
+          <input id="studentName" type="text" placeholder="Student name" />
+        </div>
+        <div>
+          <label for="className">Class:</label>
+          <input id="className" type="text" placeholder="Class" />
+        </div>
+      </div>
+
+      <div class="problems-grid" id="problemsGrid">
+        <!-- Problems will be injected by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const NUM_PROBLEMS = 12;
+    const problemsGrid = document.getElementById("problemsGrid");
+    const checkBtn = document.getElementById("checkBtn");
+    const newBtn = document.getElementById("newBtn");
+    const exportBtn = document.getElementById("exportBtn");
+    const dateDisplay = document.getElementById("dateDisplay");
+
+    // Store the current problems and answers
+    let problems = [];
+
+    function randomInt(min, max) {
+      // inclusive
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateProblems() {
+      problems = [];
+      problemsGrid.innerHTML = "";
+
+      for (let i = 0; i < NUM_PROBLEMS; i++) {
+        const a = randomInt(1, 99); // 1- or 2-digit
+        const b = randomInt(1, 99);
+        const product = a * b;
+
+        problems.push({ a, b, product });
+
+        const card = document.createElement("div");
+        card.className = "problem-card";
+        card.dataset.index = i;
+
+        const expr = document.createElement("div");
+        expr.className = "problem-expression";
+        expr.innerHTML = `
+          <span>${a}</span>
+          <span>×</span>
+          <span>${b}</span>
+          <span>=</span>
+          <input type="number" class="answer-input" inputmode="numeric" />
+        `;
+
+        const feedback = document.createElement("div");
+        feedback.className = "feedback";
+        feedback.textContent = ""; // initially blank
+
+        card.appendChild(expr);
+        card.appendChild(feedback);
+        problemsGrid.appendChild(card);
+      }
+    }
+
+    function checkAnswers() {
+      const cards = problemsGrid.querySelectorAll(".problem-card");
+      cards.forEach((card) => {
+        const index = parseInt(card.dataset.index, 10);
+        const problem = problems[index];
+        const input = card.querySelector(".answer-input");
+        const feedback = card.querySelector(".feedback");
+
+        const studentValue = parseInt(input.value, 10);
+        if (!isNaN(studentValue) && studentValue === problem.product) {
+          feedback.textContent = "✅ Correct!";
+          feedback.classList.remove("incorrect");
+          feedback.classList.add("correct");
+        } else {
+          feedback.textContent = "🔴 Try again";
+          feedback.classList.remove("correct");
+          feedback.classList.add("incorrect");
+        }
+      });
+    }
+
+    function exportWorksheetAsJPG() {
+      const worksheet = document.getElementById("worksheet");
+
+      html2canvas(worksheet, {
+        backgroundColor: "#ffffff",
+        scale: 2
+      }).then((canvas) => {
+        const dataURL = canvas.toDataURL("image/jpeg", 0.9);
+        const link = document.createElement("a");
+        const now = new Date();
+        const stamp = now
+          .toISOString()
+          .replace(/[:.]/g, "-")
+          .slice(0, 19); // YYYY-MM-DDTHH-MM-SS
+        link.download = `multiplication-practice-${stamp}.jpg`;
+        link.href = dataURL;
+        link.click();
+      });
+    }
+
+    function setTodayDate() {
+      const now = new Date();
+      const options = { year: "numeric", month: "short", day: "numeric" };
+      dateDisplay.textContent = now.toLocaleDateString(undefined, options);
+    }
+
+    // Event listeners
+    checkBtn.addEventListener("click", checkAnswers);
+    newBtn.addEventListener("click", () => {
+      generateProblems();
+    });
+    exportBtn.addEventListener("click", exportWorksheetAsJPG);
+
+    // Initial setup
+    setTodayDate();
+    generateProblems();
+  </script>
+</body>
+</html>
