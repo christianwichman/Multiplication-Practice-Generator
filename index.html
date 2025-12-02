@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Multiplication Practice (12 Questions)</title>
+  <title>Multiplication Practice (1–20 × 1–20)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- html2canvas for exporting the worksheet as an image -->
@@ -46,6 +46,7 @@
       font-weight: 500;
       box-shadow: 0 2px 6px rgba(74, 125, 255, 0.35);
       transition: transform 0.08s ease, box-shadow 0.08s ease;
+      white-space: nowrap;
     }
 
     .btn.secondary {
@@ -53,6 +54,13 @@
       color: #325;
       border: 1px solid #c0cffc;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .btn.small {
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      box-shadow: none;
+      border-radius: 999px;
     }
 
     .btn:hover {
@@ -147,12 +155,19 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 70px;
+      min-height: 80px;
+    }
+
+    .problem-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
     }
 
     .problem-expression {
       font-size: 1rem;
-      margin-bottom: 6px;
       display: flex;
       align-items: center;
       gap: 4px;
@@ -173,7 +188,7 @@
     }
 
     .feedback {
-      margin-top: 4px;
+      margin-top: 2px;
       font-size: 0.8rem;
       min-height: 1em;
     }
@@ -190,7 +205,7 @@
 <body>
   <div class="page">
     <div class="controls-bar">
-      <button class="btn" id="checkBtn">Check Answers</button>
+      <button class="btn" id="checkAllBtn">Check All Answers</button>
       <button class="btn secondary" id="newBtn">New Questions</button>
       <button class="btn" id="exportBtn">Export as JPG</button>
     </div>
@@ -199,9 +214,10 @@
     <div id="worksheet">
       <div class="worksheet-header">
         <div>
-          <div class="worksheet-title">Multiplication Practice (12 Questions)</div>
+          <div class="worksheet-title">Multiplication Practice (1–20 × 1–20)</div>
           <div class="instructions">
-            Multiply the two numbers and write the product. Then click <strong>Check Answers</strong>.
+            Multiply the two numbers and write the product. Use the <strong>Check</strong> button on each question
+            (or <strong>Check All Answers</strong> at the top).
           </div>
         </div>
         <div class="worksheet-meta" id="dateDisplay"></div>
@@ -227,7 +243,7 @@
   <script>
     const NUM_PROBLEMS = 12;
     const problemsGrid = document.getElementById("problemsGrid");
-    const checkBtn = document.getElementById("checkBtn");
+    const checkAllBtn = document.getElementById("checkAllBtn");
     const newBtn = document.getElementById("newBtn");
     const exportBtn = document.getElementById("exportBtn");
     const dateDisplay = document.getElementById("dateDisplay");
@@ -245,8 +261,8 @@
       problemsGrid.innerHTML = "";
 
       for (let i = 0; i < NUM_PROBLEMS; i++) {
-        const a = randomInt(1, 99); // 1- or 2-digit
-        const b = randomInt(1, 99);
+        const a = randomInt(1, 20); // restricted to 1–20
+        const b = randomInt(1, 20);
         const product = a * b;
 
         problems.push({ a, b, product });
@@ -254,6 +270,9 @@
         const card = document.createElement("div");
         card.className = "problem-card";
         card.dataset.index = i;
+
+        const topRow = document.createElement("div");
+        topRow.className = "problem-top";
 
         const expr = document.createElement("div");
         expr.className = "problem-expression";
@@ -265,35 +284,50 @@
           <input type="number" class="answer-input" inputmode="numeric" />
         `;
 
+        const singleCheckBtn = document.createElement("button");
+        singleCheckBtn.className = "btn small";
+        singleCheckBtn.type = "button";
+        singleCheckBtn.textContent = "Check";
+
+        topRow.appendChild(expr);
+        topRow.appendChild(singleCheckBtn);
+
         const feedback = document.createElement("div");
         feedback.className = "feedback";
         feedback.textContent = ""; // initially blank
 
-        card.appendChild(expr);
+        card.appendChild(topRow);
         card.appendChild(feedback);
         problemsGrid.appendChild(card);
+
+        // Add per-question check handler
+        singleCheckBtn.addEventListener("click", () => {
+          checkSingleAnswer(card);
+        });
       }
     }
 
-    function checkAnswers() {
-      const cards = problemsGrid.querySelectorAll(".problem-card");
-      cards.forEach((card) => {
-        const index = parseInt(card.dataset.index, 10);
-        const problem = problems[index];
-        const input = card.querySelector(".answer-input");
-        const feedback = card.querySelector(".feedback");
+    function checkSingleAnswer(card) {
+      const index = parseInt(card.dataset.index, 10);
+      const problem = problems[index];
+      const input = card.querySelector(".answer-input");
+      const feedback = card.querySelector(".feedback");
 
-        const studentValue = parseInt(input.value, 10);
-        if (!isNaN(studentValue) && studentValue === problem.product) {
-          feedback.textContent = "✅ Correct!";
-          feedback.classList.remove("incorrect");
-          feedback.classList.add("correct");
-        } else {
-          feedback.textContent = "🔴 Try again";
-          feedback.classList.remove("correct");
-          feedback.classList.add("incorrect");
-        }
-      });
+      const studentValue = parseInt(input.value, 10);
+      if (!isNaN(studentValue) && studentValue === problem.product) {
+        feedback.textContent = "✅ Correct!";
+        feedback.classList.remove("incorrect");
+        feedback.classList.add("correct");
+      } else {
+        feedback.textContent = "🔴 Try again";
+        feedback.classList.remove("correct");
+        feedback.classList.add("incorrect");
+      }
+    }
+
+    function checkAllAnswers() {
+      const cards = problemsGrid.querySelectorAll(".problem-card");
+      cards.forEach((card) => checkSingleAnswer(card));
     }
 
     function exportWorksheetAsJPG() {
@@ -310,7 +344,7 @@
           .toISOString()
           .replace(/[:.]/g, "-")
           .slice(0, 19); // YYYY-MM-DDTHH-MM-SS
-        link.download = `multiplication-practice-${stamp}.jpg`;
+        link.download = `multiplication-practice-1-20-${stamp}.jpg`;
         link.href = dataURL;
         link.click();
       });
@@ -323,10 +357,8 @@
     }
 
     // Event listeners
-    checkBtn.addEventListener("click", checkAnswers);
-    newBtn.addEventListener("click", () => {
-      generateProblems();
-    });
+    checkAllBtn.addEventListener("click", checkAllAnswers);
+    newBtn.addEventListener("click", generateProblems);
     exportBtn.addEventListener("click", exportWorksheetAsJPG);
 
     // Initial setup
