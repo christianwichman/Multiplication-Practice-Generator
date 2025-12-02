@@ -63,14 +63,20 @@
       border-radius: 999px;
     }
 
-    .btn:hover {
+    .btn:hover:not(:disabled) {
       transform: translateY(-1px);
       box-shadow: 0 3px 8px rgba(74, 125, 255, 0.4);
     }
 
-    .btn:active {
+    .btn:active:not(:disabled) {
       transform: translateY(0);
       box-shadow: 0 1px 4px rgba(74, 125, 255, 0.25);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: default;
+      box-shadow: none;
     }
 
     /* Worksheet container (this is what we export as JPG) */
@@ -102,6 +108,10 @@
       font-size: 0.8rem;
       color: #567;
       text-align: right;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      align-items: flex-end;
     }
 
     .instructions {
@@ -187,6 +197,10 @@
       font-size: 0.95rem;
     }
 
+    .answer-input:disabled {
+      background: #e4e7ff;
+    }
+
     .feedback {
       margin-top: 2px;
       font-size: 0.8rem;
@@ -205,7 +219,6 @@
 <body>
   <div class="page">
     <div class="controls-bar">
-      <button class="btn" id="checkAllBtn">Check All Answers</button>
       <button class="btn secondary" id="newBtn">New Questions</button>
       <button class="btn" id="exportBtn">Export as JPG</button>
     </div>
@@ -216,11 +229,14 @@
         <div>
           <div class="worksheet-title">Multiplication Practice (1–20 × 1–20)</div>
           <div class="instructions">
-            Multiply the two numbers and write the product. Use the <strong>Check</strong> button on each question
-            (or <strong>Check All Answers</strong> at the top).
+            Multiply the two numbers and write the product. Use the <strong>Check</strong> button on each question.
           </div>
         </div>
-        <div class="worksheet-meta" id="dateDisplay"></div>
+        <div class="worksheet-meta">
+          <div id="dateDisplay"></div>
+          <div id="timerDisplay">Time: --:--</div>
+          <div id="bestTimeDisplay">Best today: --:--</div>
+        </div>
       </div>
 
       <div class="student-info">
@@ -243,22 +259,134 @@
   <script>
     const NUM_PROBLEMS = 12;
     const problemsGrid = document.getElementById("problemsGrid");
-    const checkAllBtn = document.getElementById("checkAllBtn");
     const newBtn = document.getElementById("newBtn");
     const exportBtn = document.getElementById("exportBtn");
     const dateDisplay = document.getElementById("dateDisplay");
+    const timerDisplay = document.getElementById("timerDisplay");
+    const bestTimeDisplay = document.getElementById("bestTimeDisplay");
 
     // Store the current problems and answers
     let problems = [];
+
+    // Timer state
+    let timerStart = null;
+    let timerEnd = null;
+    let timerInterval = null;
 
     function randomInt(min, max) {
       // inclusive
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
+    function resetTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      timerStart = null;
+      timerEnd = null;
+      timerDisplay.textContent = "Time: --:--";
+    }
+
+    function formatDuration(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      const mm = String(minutes).padStart(2, "0");
+      const ss = String(seconds).padStart(2, "0");
+      return `${mm}:${ss}`;
+    }
+
+    function startTimerIfNeeded() {
+      if (timerStart === null) {
+        timerStart = Date.now();
+        timerInterval = setInterval(updateTimer, 250);
+      }
+    }
+
+    function updateTimer() {
+      if (timerStart !== null && timerEnd === null) {
+        const now = Date.now();
+        const elapsed = now - timerStart;
+        timerDisplay.textContent = "Time: " + formatDuration(elapsed);
+      }
+    }
+
+    function getTodayKey() {
+      const now = new Date();
+      // YYYY-MM-DD
+      return now.toISOString().slice(0, 10);
+    }
+
+    function loadBestTime() {
+      const key = "bestTime-" + getTodayKey();
+      const msStr = localStorage.getItem(key);
+      if (msStr) {
+        const ms = parseInt(msStr, 10);
+        if (!isNaN(ms)) {
+          bestTimeDisplay.textContent = "Best today: " + formatDuration(ms);
+          return;
+        }
+      }
+      bestTimeDisplay.textContent = "Best today: --:--";
+    }
+
+    function saveBestTimeIfBetter(elapsedMs) {
+      const key = "bestTime-" + getTodayKey();
+      const existing = localStorage.getItem(key);
+      let shouldUpdate = false;
+
+      if (!existing) {
+        shouldUpdate = true;
+      } else {
+        const existingMs = parseInt(existing, 10);
+        if (isNaN(existingMs) || elapsedMs < existingMs) {
+          shouldUpdate = true;
+        }
+      }
+
+      if (shouldUpdate) {
+        localStorage.setItem(key, String(elapsedMs));
+        bestTimeDisplay.textContent = "Best today: " + formatDuration(elapsedMs);
+      }
+    }
+
+    function lockWorksheet() {
+      const inputs = document.querySelectorAll(".answer-input");
+      const buttons = document.querySelectorAll(".problem-card .btn.small");
+      inputs.forEach((input) => {
+        input.disabled = true;
+      });
+      buttons.forEach((btn) => {
+        btn.disabled = true;
+      });
+    }
+
+    function stopTimerIfComplete() {
+      if (timerStart === null || timerEnd !== null) return;
+
+      const inputs = document.querySelectorAll(".answer-input");
+      const allFilled = Array.from(inputs).every(
+        (input) => input.value.trim() !== ""
+      );
+
+      if (allFilled) {
+        timerEnd = Date.now();
+        if (timerInterval) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+        }
+        const elapsed = timerEnd - timerStart;
+        timerDisplay.textContent = "Final time: " + formatDuration(elapsed);
+        saveBestTimeIfBetter(elapsed);
+        lockWorksheet();
+      }
+    }
+
     function generateProblems() {
       problems = [];
       problemsGrid.innerHTML = "";
+      resetTimer();
 
       for (let i = 0; i < NUM_PROBLEMS; i++) {
         const a = randomInt(1, 20); // restricted to 1–20
@@ -300,6 +428,14 @@
         card.appendChild(feedback);
         problemsGrid.appendChild(card);
 
+        const answerInput = expr.querySelector(".answer-input");
+
+        // Start timer on first input; check completion on every input
+        answerInput.addEventListener("input", () => {
+          startTimerIfNeeded();
+          stopTimerIfComplete();
+        });
+
         // Add per-question check handler
         singleCheckBtn.addEventListener("click", () => {
           checkSingleAnswer(card);
@@ -323,11 +459,6 @@
         feedback.classList.remove("correct");
         feedback.classList.add("incorrect");
       }
-    }
-
-    function checkAllAnswers() {
-      const cards = problemsGrid.querySelectorAll(".problem-card");
-      cards.forEach((card) => checkSingleAnswer(card));
     }
 
     function exportWorksheetAsJPG() {
@@ -357,12 +488,12 @@
     }
 
     // Event listeners
-    checkAllBtn.addEventListener("click", checkAllAnswers);
     newBtn.addEventListener("click", generateProblems);
     exportBtn.addEventListener("click", exportWorksheetAsJPG);
 
     // Initial setup
     setTodayDate();
+    loadBestTime();
     generateProblems();
   </script>
 </body>
